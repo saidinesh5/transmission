@@ -1291,7 +1291,7 @@ void DetailsDialog::onAddTrackerClicked()
 {
     bool ok = false;
     QString const urls = QInputDialog::getMultiLineText(this, tr("Add URL(s) "),
-        tr("Add tracker announce URL(s) (one per line):"), {}, &ok);
+        tr("Add tracker announce URLs, one per line:"), {}, &ok);
     QStringList urlList = urls.split(QRegExp(QString::fromStdString("\n|\r\n|\r")), QString::SkipEmptyParts);
 
     // Filter out invalid urls
