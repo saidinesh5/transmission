@@ -82,6 +82,22 @@ int measureViewItem(QTreeWidget* view, int column, QString const& text)
     return std::max(itemWidth, headerWidth);
 }
 
+bool torrentsHaveTrackers(TrackerModel const& tm, torrent_ids_t const& ids, QStringList const& urls)
+{
+    for (auto const& id : ids)
+    {
+        for (auto const& url : urls)
+        {
+            if (tm.find(id, url) == -1)
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 } // namespace
 
 /***
@@ -1290,55 +1306,30 @@ void DetailsDialog::onTrackerSelectionChanged()
 void DetailsDialog::onAddTrackerClicked()
 {
     bool ok = false;
-    QString const urls = QInputDialog::getMultiLineText(this, tr("Add URL(s) "),
+    QString const text = QInputDialog::getMultiLineText(this, tr("Add URL(s) "),
         tr("Add tracker announce URLs, one per line:"), {}, &ok);
-    QSet<QUrl> urls;
-    for (auto const& line : text.split(QRegExp(QStringLiteral("[\r\n]+"))))
+
+    if (ok)
     {
-        QUrl const url(line.trimmed());
-        if (url.isValid())
+        QSet<QUrl> urls;
+
+        for (auto const& line : text.split(QRegExp(QStringLiteral("[\r\n]+"))))
         {
-            urls.insert(url);
-        }
-    }
-
-    if (!ok)
-    {
-        // user pressed "cancel" -- noop
-    }
-    else if (urlList.isEmpty())
-    {
-      QMessageBox::warning(this, tr("Error"), tr("No new URLs found."));
-    }
-    else
-    {
-        QHash<QString, torrent_ids_t> torrentIdsPerUrl;
-
-        for (auto const& url : urlList)
-        {
-            torrent_ids_t ids;
-
-            for (int const id : myIds)
+            QUrl const url(line.trimmed());
+            if (url.isValid())
             {
-                if (myTrackerModel->find(id, url) == -1)
-                {
-                    ids.insert(id);
-                }
-            }
-
-            if (!ids.empty())
-            {
-                torrentIdsPerUrl[url] = ids;
+                urls.insert(url);
             }
         }
 
-        if (torrentIdsPerUrl.empty()) // all the torrents already have this tracker
+        auto const urlstrs = QUrl::toStringList(urls.values());
+        if (urlstrs.isEmpty() || torrentsHaveTrackers(*myTrackerModel, myIds, urlstrs))
         {
-            QMessageBox::warning(this, tr("Error"), tr("Tracker(s) already exist."));
+            QMessageBox::warning(this, tr("Error"), tr("No new URLs found."));
         }
         else
         {
-mySession.torrentSet(myIds, TR_KEY_trackerAdd, urlstrs);
+            mySession.torrentSet(myIds, TR_KEY_trackerAdd, urlstrs);
             getNewData();
         }
     }
