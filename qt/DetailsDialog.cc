@@ -1308,7 +1308,7 @@ void DetailsDialog::onAddTrackerClicked()
     }
     else if (urlList.isEmpty())
     {
-        QMessageBox::warning(this, tr("Error"), tr("No valid URL(s) \"%1\"").arg(urls));
+      QMessageBox::warning(this, tr("Error"), tr("No new URLs found."));
     }
     else
     {
