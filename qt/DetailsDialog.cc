@@ -1292,18 +1292,15 @@ void DetailsDialog::onAddTrackerClicked()
     bool ok = false;
     QString const urls = QInputDialog::getMultiLineText(this, tr("Add URL(s) "),
         tr("Add tracker announce URLs, one per line:"), {}, &ok);
-    QStringList urlList = urls.split(QRegExp(QString::fromStdString("\n|\r\n|\r")), QString::SkipEmptyParts);
-
-    // Filter out invalid urls
-    urlList.erase(std::remove_if(urlList.begin(),
-        urlList.end(),
-        [](auto const& url) { return !QUrl(url).isValid(); }),
-        urlList.end());
-
-    // Remove duplicate urls
-    urlList.sort();
-    urlList.erase(std::unique(urlList.begin(), urlList.end()),
-        urlList.end());
+    QSet<QUrl> urls;
+    for (auto const& line : text.split(QRegExp(QStringLiteral("[\r\n]+"))))
+    {
+        QUrl const url(line.trimmed());
+        if (url.isValid())
+        {
+            urls.insert(url);
+        }
+    }
 
     if (!ok)
     {
