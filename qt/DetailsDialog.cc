@@ -1338,13 +1338,7 @@ void DetailsDialog::onAddTrackerClicked()
         }
         else
         {
-            QHashIterator i(torrentIdsPerUrl);
-            while (i.hasNext())
-            {
-                i.next();
-                mySession.torrentSet(i.value(), TR_KEY_trackerAdd, { i.key() });
-            }
-
+mySession.torrentSet(myIds, TR_KEY_trackerAdd, urlstrs);
             getNewData();
         }
     }
